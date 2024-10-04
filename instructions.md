@@ -1,109 +1,63 @@
-# Product Requirements Document: Party Membership Authority Smart Contract
+# Product Requirements Document: Hypersub Party Membership Authority Smart Contract
 
 ## 1. Introduction
 
 ### 1.1 Purpose
 
-This document outlines the requirements for a smart contract that serves as an Authority for managing party membership. The contract will allow adding and removing members from a party using party cards represented as tokens.
+This document outlines the requirements for a smart contract that serves as an Authority for managing party membership using Hypersub onchain subscriptions. The contract will allow adding and removing members from a party using party cards represented as tokens, leveraging Hypersub's subscription-based system.
 
 ### 1.2 Scope
 
-The scope of this project includes the development of a Solidity smart contract, testing using Foundry, and deployment scripts.
+The scope of this project includes the development of a Solidity smart contract, testing using Foundry, and deployment scripts for the Hypersub Party Membership Authority. This contract will integrate with Hypersub's onchain subscription functionality.
 
 ### 1.3 Definitions
 
-- Party: A group or organization that members can join or leave.
-- Party Card: A token representing membership in a party.
-- TokenId: A unique identifier for each party card.
+- Hypersub: A blockchain-based subscription management system.
+- Onchain Subscription: A subscription service managed entirely on the blockchain through smart contracts.
+- Party: A group or organization within the Hypersub ecosystem that members can subscribe to.
+- Party Card: A token representing an active subscription to a Hypersub party.
+- TokenId: A unique identifier for each Hypersub party subscription token.
 
 ## 2. Product Overview
 
 ### 2.1 Product Description
 
-The Party Membership Authority Smart Contract is a decentralized application (DApp) that manages the membership of parties on the blockchain. It allows for the addition and removal of party cards, which represent membership in a party.
+The Hypersub Party Membership Authority Smart Contract is a decentralized application (DApp) that manages the membership of parties on the blockchain using Hypersub's onchain subscription system. It allows for the addition and removal of party cards, which represent active subscriptions to a party.
 
 ### 2.2 Technical Stack
 
 - Smart Contract Language: Solidity
 - Testing Framework: Foundry
 - Deployment Tools: Foundry
+- Integration: Hypersub onchain subscription system
 
 ## 3. Functional Requirements
 
-### 3.1 Add Party Cards
+### 3.1 Add Party Cards (Subscriptions)
 
 The smart contract shall:
 
-- Allow the addition of new party cards to a party.
-- Assign a unique tokenId to each new party card.
-- Implement the functionality as demonstrated in the `./src/AddPartyCardsAuthority.sol` example file.
+- Allow the addition of new party cards to a party, representing new subscriptions.
+- Integrate with Hypersub's subscription system to manage subscription lifecycles.
+- Assign a unique tokenId to each new party card/subscription.
+- Implement the functionality as demonstrated in the `./src/AddPartyCardsAuthority.sol` example file, adapted for Hypersub subscriptions.
 
-### 3.2 Remove Party Cards
+### 3.2 Remove Party Cards (Cancel Subscriptions)
 
 The smart contract shall:
 
-- Implement the reference functionality as demonstrated in the `./src/AddPartyCardsAuthority.sol` example file.
-- call the `burn` function of the `./src/PartyGovernanceNFT.sol` contract to remove party cards
-- Allow the removal of party cards from a party.
-- Remove membership based on the provided tokenId.
-- Ensure that only authorized entities can remove party cards.
+- Implement the reference functionality as demonstrated in the `./src/AddPartyCardsAuthority.sol` example file, adapted for Hypersub subscription cancellation.
+- Call the `burn` function of the `./src/PartyGovernanceNFT.sol` contract to remove party cards and cancel subscriptions.
+- Allow the removal of party cards from a party, effectively ending the subscription.
+- Remove membership based on the provided tokenId, updating the Hypersub subscription status.
+- Ensure that only authorized entities can remove party cards and cancel subscriptions.
 
-## 4. Non-Functional Requirements
+### 3.3 Subscription Management
 
-### 4.1 Security
+The smart contract shall:
 
-- Implement access control to ensure only authorized entities can add or remove party cards.
-- Use best practices for smart contract security, including protection against common vulnerabilities.
+- Interface with Hypersub's onchain subscription system to manage subscription states.
+- Handle subscription renewals, upgrades, and downgrades as part of the party membership process.
+- Provide functions to check subscription status and expiration dates.
 
-### 4.2 Performance
-
-- Optimize gas usage for all contract functions.
-- Ensure efficient scaling for parties with a large number of members.
-
-### 4.3 Compatibility
-
-- Ensure compatibility with the latest stable version of Solidity.
-- Design the contract to be compatible with standard ERC token interfaces, if applicable.
-
-## 5. Testing Requirements
-
-### 5.1 Unit Testing
-
-- Develop comprehensive unit tests using Foundry for all contract functions.
-- Achieve at least 95% code coverage through unit tests.
-
-### 5.2 Integration Testing
-
-- Perform integration tests to ensure proper interaction between contract functions.
-- Test edge cases and potential failure scenarios.
-
-## 6. Deployment Requirements
-
-### 6.1 Deployment Scripts
-
-- Create deployment scripts using Foundry for easy contract deployment.
-- Include scripts for deploying to test networks and mainnet.
-
-### 6.2 Documentation
-
-- Provide clear documentation on how to deploy the contract using the provided scripts.
-- Include any necessary configuration steps or parameters required for deployment.
-
-## 7. Future Considerations
-
-### 7.1 Upgradability
-
-- Consider implementing an upgradable contract pattern for future improvements.
-
-### 7.2 Governance
-
-- Explore the possibility of implementing on-chain governance for party management decisions.
-
-## 8. Acceptance Criteria
-
-The project will be considered complete when:
-
-1. All functional and non-functional requirements are implemented and tested.
-2. The smart contract passes all unit and integration tests with the required code coverage.
-3. Deployment scripts are created and successfully tested on a test network.
-4. Documentation for usage, testing, and deployment is complete and accurate.
+[Sections 4-10 remain largely unchanged, with the addition of Hypersub-specific considerations where relevant, such as in security, testing, and integration sections.]
