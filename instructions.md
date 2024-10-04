@@ -147,6 +147,7 @@ The smart contract shall:
   - README with project overview and setup instructions
   - Contributing guidelines
   - Code of conduct
+- NATSPEC documentation comments are added to all smart contracts and functions.
 
 ## 9. Acceptance Criteria
 
@@ -155,7 +156,7 @@ The project will be considered complete when:
 1. All functional and non-functional requirements are implemented and tested.
 2. The smart contract passes all unit and integration tests with the required code coverage.
 3. Deployment scripts are created and successfully tested on a test network.
-4. Documentation for usage, testing, and deployment is complete and accurate.
+4. Documentation for NATSPEC, usage, testing, and deployment is complete and accurate.
 5. Minimal code is used to achieve the functionality.
 6. Clean code by Uncle Bob Martin's standards are folled throughout the codebase.
 7. GitHub Actions are set up and successfully running automated tests on every push and pull request.
