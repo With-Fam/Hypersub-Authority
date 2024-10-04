@@ -14,7 +14,7 @@ The scope of this project includes the development of a Solidity smart contract,
 
 - Hypersub: A blockchain-based subscription management system.
 - Onchain Subscription: A subscription service managed entirely on the blockchain through smart contracts.
-- Party Protocol: An open protocol for group coordination on Ethereum, providing on-chain functionality for group formation, coordination, and distribution.
+- Party Protocol: An open protocol for group coordination on Ethereum, providing onchain functionality for group formation, coordination, and distribution.
 - Party: A group formed and managed through the Party Protocol, which members can subscribe to using Hypersub.
 - Party Cards: NFTs (ERC721) representing membership in a specific Party. Each Party Card has its own amount of voting power.
 - TokenId: A unique identifier for each party subscription token.
@@ -23,7 +23,7 @@ The scope of this project includes the development of a Solidity smart contract,
 
 ### 2.1 Product Description
 
-The Hypersub Party Membership Authority Smart Contract is a decentralized application (DApp) that manages the membership of parties on the blockchain using Hypersub's onchain subscription system in conjunction with the Party Protocol. It allows for the addition and removal of party cards, which represent active subscriptions to a party, enhancing the Party Protocol's group coordination capabilities with subscription-based features.
+The Hypersub Party Membership Authority Smart Contract is a decentralized application (DApp) that manages the membership of parties on the blockchain using Hypersub's onchain subscription system in conjunction with the Party Protocol. It allows for the addition and removal of party cards, which represent voting membership in a party, enhancing the Party Protocol's group coordination capabilities with subscription-based features.
 
 ### 2.2 Technical Stack
 
@@ -47,6 +47,7 @@ The smart contract shall:
 - If both conditions are met, mint a new Party Card to the user.
 - Assign appropriate voting power to the newly minted Party Card.
 - Implement the functionality as demonstrated in the `./src/AddPartyCardsAuthority.sol` example file, adapted for the verification and minting process.
+- Use the `balanceOf` method in the hypersub subscription contract as demonstrated in `./src/TODO_HYPERSUB_CONTRACT.sol`. If the value is greater than zero, the user has an active hypersub membership and the minting process should succeed as long as they do not already have a Party Card for the party.
 
 ### 3.2 Remove Party Cards
 
@@ -54,9 +55,11 @@ The smart contract shall:
 
 - Implement the reference functionality as demonstrated in the `./src/AddPartyCardsAuthority.sol` example file, adapted for Party Card removal.
 - Call the `burn` function of the `./src/PartyGovernanceNFT.sol` contract to remove Party Cards.
-- Allow the removal of Party Cards from a party, effectively ending the user's membership.
+- Before burning, verify that:
+  1. The user does not have an active Hypersub subscription.
+  2. The user's current balance of Party NFTs for this specific party is greater than zero (partyNft.balanceOf(user) > 0).
+- Allow the burning of Party Cards from a member who's hypersub subscription has expired, effectively ending the user's membership in the party.
 - Remove membership based on the provided tokenId.
-- Ensure that only authorized entities can remove Party Cards.
 
 ### 3.3 Subscription and Membership Management
 
@@ -64,7 +67,7 @@ The smart contract shall:
 
 - Interface with Hypersub's onchain subscription system to verify active subscriptions.
 - Provide functions to check subscription status and Party Card ownership.
-- Handle cases where a user's Hypersub subscription expires, potentially flagging the Party Card for removal or deactivation.
+- Handle cases where a user's Hypersub subscription expires, burning the Party Card.
 - Implement functions to update voting power of Party Cards if necessary.
 
 ## 4. Non-Functional Requirements
@@ -77,12 +80,14 @@ The smart contract shall:
 ### 4.2 Performance
 
 - Optimize gas usage for all contract functions.
-- Ensure efficient scaling for parties with a large number of members.
+- Ensure efficient scaling for parties with high membership activation / churn.
 
 ### 4.3 Compatibility
 
-- Ensure compatibility with the latest stable version of Solidity.
+- Ensure compatibility with the latest stable version of Solidity and Foundry.
 - Design the contract to be compatible with standard ERC token interfaces, if applicable.
+- Compatible with Party Protocol.
+- Compatible with Hypersub onchain subscription system.
 
 ## 5. Testing Requirements
 
@@ -114,28 +119,36 @@ The smart contract shall:
 - Generate and store test reports as artifacts in GitHub Actions.
 - Implement a badge in the repository README to display the current status of tests.
 
-[Sections 7-8 remain unchanged]
+## 7. Future Considerations
 
-## 9. Version Control and Collaboration
+### 7.1 Upgradability
 
-### 9.1 GitHub Repository
+- Consider implementing an upgradable contract pattern for future improvements.
+
+### 7.2 Governance
+
+- Explore the possibility of implementing onchain governance for party management decisions.
+
+## 8. Version Control and Collaboration
+
+### 8.1 GitHub Repository
 
 - Host the project in a GitHub repository.
 - Utilize GitHub features such as issues, pull requests, and project boards for project management.
 
-### 9.2 Branching Strategy
+### 8.2 Branching Strategy
 
-- Implement a branching strategy (e.g., GitFlow) for organized development.
+- Implement a branching strategy for organized development.
 - Require pull requests and code reviews before merging into the main branch.
 
-### 9.3 Documentation
+### 8.3 Documentation
 
 - Maintain up-to-date documentation in the repository, including:
   - README with project overview and setup instructions
   - Contributing guidelines
   - Code of conduct
 
-## 10. Acceptance Criteria
+## 9. Acceptance Criteria
 
 The project will be considered complete when:
 
@@ -143,5 +156,6 @@ The project will be considered complete when:
 2. The smart contract passes all unit and integration tests with the required code coverage.
 3. Deployment scripts are created and successfully tested on a test network.
 4. Documentation for usage, testing, and deployment is complete and accurate.
-5. GitHub Actions are set up and successfully running automated tests on every push and pull request.
-6. The project repository is well-organized with proper documentation and collaboration guidelines.
+5. Minimal code is used to achieve the functionality.
+6. Clean code by Uncle Bob Martin's standards are folled throughout the codebase.
+7. GitHub Actions are set up and successfully running automated tests on every push and pull request.
