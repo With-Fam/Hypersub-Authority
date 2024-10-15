@@ -7,6 +7,10 @@ out/
 /broadcast/*/31337/
 /broadcast/**/dry-run/
 
+# Allow only run-latest.json in the 84532 directory
+/broadcast/DeployJoinFamAuthority.s.sol/84532/*.json
+!/broadcast/DeployJoinFamAuthority.s.sol/84532/run-latest.json
+
 # Docs
 docs/
 
