@@ -34,10 +34,10 @@ $ anvil
 
 ## Deploy - JoinFamAuthority
 
-The JoinFamAuthority contract has been deployed to Base Sepolia testnet. Here are the deployment details:
+The JoinFamAuthority contract has been deployed to Base Sepolia testnet. Here are the latest deployment details:
 
-- **Contract Address**: `0x3b026eA40a095A23b6D330221C09283a7Fd26473`
-- **Transaction Hash**: `0x9e5fdb07a7febdeeba2dd77bdfa8bb82f156facc691b37e56a4780f9fb57e463`
+- **Contract Address**: `0xAA0C69957a3F056a52fa9408146AC02608Bb5068`
+- **Transaction Hash**: `0x8466eb8fb26be478780dd20ed035f4c6d98a8add2cdb5a8e8b28aa95de316d11`
 - **Deployer Address**: `0x35CE1fb8CAa3758190ac65EDbcBC9647b8800e8f`
 
 ```
