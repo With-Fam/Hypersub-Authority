@@ -47,6 +47,12 @@ $ anvil
 
 ## Deploy - JoinFamAuthority
 
+The JoinFamAuthority contract has been deployed to Base Sepolia testnet. Here are the deployment details:
+
+- **Contract Address**: `0x3b026eA40a095A23b6D330221C09283a7Fd26473`
+- **Transaction Hash**: `0x9e5fdb07a7febdeeba2dd77bdfa8bb82f156facc691b37e56a4780f9fb57e463`
+- **Deployer Address**: `0x35CE1fb8CAa3758190ac65EDbcBC9647b8800e8f`
+
 ```
 forge script script/DeployJoinFamAuthority.s.sol:DeployJoinFamAuthority --rpc-url YOUR_RPC_URL --private-key YOUR_PRIVATE_KEY --broadcast --verify --etherscan-api-key BLOCK_SCANNER_API_KEY -vvvv
 ```
