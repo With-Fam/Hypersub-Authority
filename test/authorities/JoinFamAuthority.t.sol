@@ -35,7 +35,7 @@ contract JoinFamAuthorityTest is SetupPartyHelper {
         uint96 totalVotingPowerBefore = party.getGovernanceValues().totalVotingPower;
 
         vm.prank(address(party));
-        authority.addPartyCards(newPartyMembers, newPartyMemberVotingPowers, initialDelegates);
+        authority.addPartyCards(address(party), newPartyMembers, newPartyMemberVotingPowers, initialDelegates);
 
         assertEq(party.getGovernanceValues().totalVotingPower - totalVotingPowerBefore, newPartyMemberVotingPowers[0]);
         assertEq(party.votingPowerByTokenId(party.tokenCount()), newPartyMemberVotingPowers[0]);
@@ -64,7 +64,7 @@ contract JoinFamAuthorityTest is SetupPartyHelper {
         vm.expectEmit(true, true, true, true);
         emit PartyCardAdded(address(party), newPartyMembers[2], newPartyMemberVotingPowers[2]);
         vm.prank(address(party));
-        authority.addPartyCards(newPartyMembers, newPartyMemberVotingPowers, initialDelegates);
+        authority.addPartyCards(address(party), newPartyMembers, newPartyMemberVotingPowers, initialDelegates);
 
         uint96 totalVotingPowerAdded;
         for (uint256 i; i < newPartyMembers.length; i++) {
@@ -102,7 +102,7 @@ contract JoinFamAuthorityTest is SetupPartyHelper {
         vm.expectEmit(true, true, true, true);
         emit PartyCardAdded(address(party), newPartyMembers[2], newPartyMemberVotingPowers[2]);
         vm.prank(address(party));
-        authority.addPartyCards(newPartyMembers, newPartyMemberVotingPowers, initialDelegates);
+        authority.addPartyCards(address(party), newPartyMembers, newPartyMemberVotingPowers, initialDelegates);
 
         uint96 totalVotingPowerAdded;
         for (uint256 i; i < newPartyMembers.length; i++) {
@@ -124,7 +124,7 @@ contract JoinFamAuthorityTest is SetupPartyHelper {
         address[] memory initialDelegates;
 
         vm.expectRevert(JoinFamAuthority.NoPartyMembers.selector);
-        authority.addPartyCards(newPartyMembers, newPartyMemberVotingPowers, initialDelegates);
+        authority.addPartyCards(address(party), newPartyMembers, newPartyMemberVotingPowers, initialDelegates);
     }
 
     function test_addPartyCard_cannotAddZeroVotingPower() public {
@@ -136,7 +136,7 @@ contract JoinFamAuthorityTest is SetupPartyHelper {
         initialDelegates[0] = _randomAddress();
 
         vm.expectRevert(JoinFamAuthority.InvalidPartyMemberVotingPower.selector);
-        authority.addPartyCards(newPartyMembers, newPartyMemberVotingPowers, initialDelegates);
+        authority.addPartyCards(address(party), newPartyMembers, newPartyMemberVotingPowers, initialDelegates);
     }
 
     function test_addPartyCard_arityMismatch() public {
@@ -148,7 +148,7 @@ contract JoinFamAuthorityTest is SetupPartyHelper {
         initialDelegates[0] = _randomAddress();
 
         vm.expectRevert(JoinFamAuthority.ArityMismatch.selector);
-        authority.addPartyCards(newPartyMembers, newPartyMemberVotingPowers, initialDelegates);
+        authority.addPartyCards(address(party), newPartyMembers, newPartyMemberVotingPowers, initialDelegates);
     }
 
     function test_addPartyCard_integration() public {
@@ -168,7 +168,8 @@ contract JoinFamAuthorityTest is SetupPartyHelper {
             target: payable(address(authority)),
             value: 0,
             data: abi.encodeCall(
-                JoinFamAuthority.addPartyCards, (newPartyMembers, newPartyMemberVotingPowers, initialDelegates)
+                JoinFamAuthority.addPartyCards,
+                (address(party), newPartyMembers, newPartyMemberVotingPowers, initialDelegates)
             ),
             expectedResultHash: bytes32(0)
         });
