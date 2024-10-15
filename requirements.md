@@ -1,4 +1,4 @@
-# Product Requirements Document: Hypersub Party Membership Authority Smart Contract
+# Product Requirements Document: Fam Party Membership Authority Smart Contract
 
 ## 1. Introduction
 
@@ -36,7 +36,7 @@ The Hypersub Party Membership Authority Smart Contract is a decentralized applic
 
 ## 3. Functional Requirements
 
-### 3.1 Mint New Party Cards
+### 3.1 Join Fam Authority
 
 The smart contract shall:
 
@@ -160,3 +160,46 @@ The project will be considered complete when:
 5. Minimal code is used to achieve the functionality.
 6. Clean code by Uncle Bob Martin's standards are folled throughout the codebase.
 7. GitHub Actions are set up and successfully running automated tests on every push and pull request.
+
+## 10. Deployment
+
+### 10.1 Prerequisites
+
+- Obtain an RPC URL from chainlist (https://chainlist.org/?search=base&testnets=true) for the Base Sepolia testnet.
+- Create a new private key specifically for deployment. This key may be visible to others, so do not use it for any other purpose.
+- Add some ETH to the newly created address on the Base Sepolia testnet.
+- Obtain a BlockScanner API key from BaseScan (https://basescan.org/myapikey).
+
+### 10.2 Deployment Script
+
+- Create a deployment script named `DeployJoinFamAuthority.s.sol` in the `script/` directory.
+- The script should handle the deployment of the JoinFamAuthority contract.
+
+### 10.3 Deployment Command
+
+Use the following command to deploy the JoinFamAuthority contract:
+
+```
+forge script script/DeployJoinFamAuthority.s.sol:DeployJoinFamAuthority --rpc-url YOUR_RPC_URL --private-key YOUR_PRIVATE_KEY --broadcast --verify --etherscan-api-key BLOCK_SCANNER_API_KEY -vvvv
+```
+
+Replace the following placeholders:
+
+- `YOUR_RPC_URL`: The RPC URL obtained from chainlist for Base Sepolia.
+- `YOUR_PRIVATE_KEY`: The private key created for deployment.
+- `BLOCK_SCANNER_API_KEY`: The API key obtained from BaseScan.
+
+### 10.4 Verification
+
+- Ensure the deployment script includes steps to verify the contract on BaseScan.
+- After successful deployment, confirm that the contract is verified and accessible on BaseScan.
+
+### 10.5 Documentation
+
+- Update the README with the deployed contract address and any specific instructions for interacting with the deployed contract.
+- Document any environment-specific configurations or parameters used during deployment.
+
+### 10.6 Testing on Testnet
+
+- After deployment, perform a series of tests on the Base Sepolia testnet to ensure all functionalities work as expected in a live environment.
+- Document any issues encountered during testnet deployment and testing, and update the contract or deployment process if necessary.

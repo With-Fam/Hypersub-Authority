@@ -1,19 +1,6 @@
-## Foundry
+# Fam Party Membership Authority Smart Contract
 
-**Foundry is a blazing fast, portable and modular toolkit for Ethereum application development written in Rust.**
-
-Foundry consists of:
-
--   **Forge**: Ethereum testing framework (like Truffle, Hardhat and DappTools).
--   **Cast**: Swiss army knife for interacting with EVM smart contracts, sending transactions and getting chain data.
--   **Anvil**: Local Ethereum node, akin to Ganache, Hardhat Network.
--   **Chisel**: Fast, utilitarian, and verbose solidity REPL.
-
-## Documentation
-
-https://book.getfoundry.sh/
-
-## Usage
+**A smart contract that serves as an Authority for managing party membership using Hypersub onchain subscriptions in conjunction with the Party Protocol. This contract allows adding and removing members from a party using party cards represented as tokens, leveraging Hypersub's subscription-based system and the Party Protocol's group coordination features.**
 
 ### Build
 
@@ -45,10 +32,16 @@ $ forge snapshot
 $ anvil
 ```
 
-### Deploy
+## Deploy - JoinFamAuthority
 
-```shell
-$ forge script script/Counter.s.sol:CounterScript --rpc-url <your_rpc_url> --private-key <your_private_key>
+The JoinFamAuthority contract has been deployed to Base Sepolia testnet. Here are the deployment details:
+
+- **Contract Address**: `0x3b026eA40a095A23b6D330221C09283a7Fd26473`
+- **Transaction Hash**: `0x9e5fdb07a7febdeeba2dd77bdfa8bb82f156facc691b37e56a4780f9fb57e463`
+- **Deployer Address**: `0x35CE1fb8CAa3758190ac65EDbcBC9647b8800e8f`
+
+```
+forge script script/DeployJoinFamAuthority.s.sol:DeployJoinFamAuthority --rpc-url YOUR_RPC_URL --private-key YOUR_PRIVATE_KEY --broadcast --verify --etherscan-api-key BLOCK_SCANNER_API_KEY -vvvv
 ```
 
 ### Cast
