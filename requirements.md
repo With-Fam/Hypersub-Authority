@@ -40,14 +40,32 @@ The Hypersub Party Membership Authority Smart Contract is a decentralized applic
 
 The smart contract shall:
 
-- Allow the minting of a new Party Card (NFT) to a user, subject to specific conditions.
+- Implement an `addPartyCards` function with the following signature:
+  ```solidity
+  function addPartyCards(
+      address party,
+      address[] calldata newPartyMembers,
+      uint96[] calldata newPartyMemberVotingPowers,
+      address[] calldata initialDelegates
+  ) external
+  ```
+- Allow the minting of new Party Cards (NFTs) to users for a specific party, subject to specific conditions.
 - Before minting, verify that:
   1. The user has an active Hypersub subscription.
-  2. The user's current balance of Party NFTs for this specific party is zero (partyNft.balanceOf(user) === 0).
-- If both conditions are met, mint a new Party Card to the user.
-- Assign appropriate voting power to the newly minted Party Card.
+  2. The user's current balance of Party NFTs for the specified party is zero (partyNft.balanceOf(user) === 0).
+- If both conditions are met, mint a new Party Card to the user for the specified party.
+- Assign appropriate voting power to the newly minted Party Card based on the `newPartyMemberVotingPowers` parameter.
+- Set the initial delegate for each new party member using the `initialDelegates` parameter.
 - Implement the functionality as demonstrated in the `./src/AddPartyCardsAuthority.sol` example file, adapted for the verification and minting process.
-- Use the `balanceOf` method in the hypersub subscription contract as demonstrated in `./src/TODO_HYPERSUB_CONTRACT.sol`. If the value is greater than zero, the user has an active hypersub membership and the minting process should succeed as long as they do not already have a Party Card for the party.
+- Use the `balanceOf` method in the hypersub subscription contract as demonstrated in `./src/TODO_HYPERSUB_CONTRACT.sol`. If the value is greater than zero, the user has an active hypersub membership and the minting process should succeed as long as they do not already have a Party Card for the specified party.
+- Ensure that the lengths of `newPartyMembers`, `newPartyMemberVotingPowers`, and `initialDelegates` arrays match.
+- Implement proper error handling for cases such as:
+  - Invalid party address
+  - No party members provided
+  - Mismatched array lengths
+  - Invalid party member address (e.g., zero address)
+  - Invalid voting power (e.g., zero voting power)
+- Emit a `PartyCardAdded` event for each successfully minted Party Card, including the party address.
 
 ### 3.2 Remove Party Cards
 

@@ -15,14 +15,20 @@ contract JoinFamAuthority {
     error InvalidPartyMemberVotingPower();
 
     /// @notice Emitted when a party card is added via the `AddPartyCardsAuthority`
-    event PartyCardAdded(address indexed party, address indexed partyMember, uint96 newIntrinsicVotingPower);
+    event PartyCardAdded(
+        address indexed party,
+        address indexed partyMember,
+        uint96 newIntrinsicVotingPower
+    );
 
     /// @notice Atomically distributes new party cards and updates the total voting power as needed.
     /// @dev Caller must be the party and this contract must be an authority on the party
+    /// @param party The address of the party to add cards to
     /// @param newPartyMembers Addresses of the new party members (duplicates allowed)
     /// @param newPartyMemberVotingPowers Voting powers for the new party cards
     /// @param initialDelegates Initial delegates for the new party members. If the member already set a delegate this is ignored.
     function addPartyCards(
+        address party,
         address[] calldata newPartyMembers,
         uint96[] calldata newPartyMemberVotingPowers,
         address[] calldata initialDelegates
@@ -32,8 +38,8 @@ contract JoinFamAuthority {
             revert NoPartyMembers();
         }
         if (
-            newPartyMembersLength != newPartyMemberVotingPowers.length
-                || newPartyMembersLength != initialDelegates.length
+            newPartyMembersLength != newPartyMemberVotingPowers.length ||
+            newPartyMembersLength != initialDelegates.length
         ) {
             revert ArityMismatch();
         }
@@ -48,13 +54,21 @@ contract JoinFamAuthority {
             }
             addedVotingPower += newPartyMemberVotingPowers[i];
         }
-        Party(payable(msg.sender)).increaseTotalVotingPower(addedVotingPower);
+        Party(payable(party)).increaseTotalVotingPower(addedVotingPower);
 
         for (uint256 i; i < newPartyMembersLength; ++i) {
             address newPartyMember = newPartyMembers[i];
             uint96 newPartyMemberVotingPower = newPartyMemberVotingPowers[i];
-            PartyGovernanceNFT(msg.sender).mint(newPartyMember, newPartyMemberVotingPower, initialDelegates[i]);
-            emit PartyCardAdded(msg.sender, newPartyMember, newPartyMemberVotingPower);
+            PartyGovernanceNFT(party).mint(
+                newPartyMember,
+                newPartyMemberVotingPower,
+                initialDelegates[i]
+            );
+            emit PartyCardAdded(
+                party,
+                newPartyMember,
+                newPartyMemberVotingPower
+            );
         }
     }
 }
