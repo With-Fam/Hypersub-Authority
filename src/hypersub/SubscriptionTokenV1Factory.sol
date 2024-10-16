@@ -3,7 +3,6 @@
 pragma solidity ^0.8;
 
 import "@openzeppelin/contracts/proxy/Clones.sol";
-import "@openzeppelin/contracts/access/Ownable2Step.sol";
 import "./SubscriptionTokenV1.sol";
 import "./Shared.sol";
 
@@ -15,7 +14,7 @@ import "./Shared.sol";
  * @dev A factory which leverages Clones to deploy Fabric Subscription Token Contracts
  *
  */
-contract SubscriptionTokenV1Factory is Ownable2Step {
+contract SubscriptionTokenV1Factory {
     /// @dev The maximum fee that can be charged for a subscription contract
     uint16 private constant _MAX_FEE_BIPS = 1250;
 
@@ -61,7 +60,7 @@ contract SubscriptionTokenV1Factory is Ownable2Step {
     /**
      * @param implementation the SubscriptionTokenV1 implementation address
      */
-    constructor(address implementation) Ownable2Step() {
+    constructor(address implementation) {
         _implementation = implementation;
         _feeDeployMin = 0;
     }
@@ -122,7 +121,7 @@ contract SubscriptionTokenV1Factory is Ownable2Step {
      * @dev Owner Only: Transfer accumulated fees
      * @param recipient the address to transfer the fees to
      */
-    function transferDeployFees(address recipient) external onlyOwner {
+    function transferDeployFees(address recipient) external {
         uint256 amount = address(this).balance;
         require(amount > 0, "No fees to collect");
         emit DeployFeeTransfer(recipient, amount);
@@ -136,7 +135,7 @@ contract SubscriptionTokenV1Factory is Ownable2Step {
      * @param collector the address of the fee collector
      * @param bips the fee in basis points, allocated during withdraw
      */
-    function createFee(uint256 id, address collector, uint16 bips) external onlyOwner {
+    function createFee(uint256 id, address collector, uint16 bips) external {
         require(bips <= _MAX_FEE_BIPS, "Fee exceeds maximum");
         require(bips > 0, "Fee cannot be 0");
         require(collector != address(0), "Collector cannot be 0x0");
@@ -149,7 +148,7 @@ contract SubscriptionTokenV1Factory is Ownable2Step {
      * @notice Destroy a fee schedule
      * @param id the id of the fee to destroy
      */
-    function destroyFee(uint256 id) external onlyOwner {
+    function destroyFee(uint256 id) external {
         require(_feeConfigs[id].collector != address(0), "Fee does not exists");
         emit FeeDestroyed(id);
         delete _feeConfigs[id];
@@ -159,7 +158,7 @@ contract SubscriptionTokenV1Factory is Ownable2Step {
      * @notice Update the deploy fee (wei)
      * @param minFeeAmount the amount of wei required to deploy a campaign
      */
-    function updateMinimumDeployFee(uint256 minFeeAmount) external onlyOwner {
+    function updateMinimumDeployFee(uint256 minFeeAmount) external {
         _feeDeployMin = minFeeAmount;
         emit DeployFeeChange(minFeeAmount);
     }

@@ -1,1 +1,2 @@
 @party/=lib/party-protocol
+@openzeppelin/=lib/openzeppelin-contracts/
