@@ -16,11 +16,8 @@ contract JoinFamAuthority {
     /// @notice Returned if a party card would be issued to a user who already has a party card
     error UserAlreadyHasPartyCard();
     /// @notice Emitted when a party card is added via the `AddPartyCardsAuthority`
-    event PartyCardAdded(
-        address indexed party,
-        address indexed partyMember,
-        uint96 newIntrinsicVotingPower
-    );
+
+    event PartyCardAdded(address indexed party, address indexed partyMember, uint96 newIntrinsicVotingPower);
 
     /// @notice Atomically distributes new party cards and updates the total voting power as needed.
     /// @dev Caller must be the party and this contract must be an authority on the party
@@ -39,8 +36,8 @@ contract JoinFamAuthority {
             revert NoPartyMembers();
         }
         if (
-            newPartyMembersLength != newPartyMemberVotingPowers.length ||
-            newPartyMembersLength != initialDelegates.length
+            newPartyMembersLength != newPartyMemberVotingPowers.length
+                || newPartyMembersLength != initialDelegates.length
         ) {
             revert ArityMismatch();
         }
@@ -66,16 +63,8 @@ contract JoinFamAuthority {
                 revert UserAlreadyHasPartyCard();
             }
 
-            PartyGovernanceNFT(party).mint(
-                newPartyMember,
-                newPartyMemberVotingPower,
-                initialDelegates[i]
-            );
-            emit PartyCardAdded(
-                party,
-                newPartyMember,
-                newPartyMemberVotingPower
-            );
+            PartyGovernanceNFT(party).mint(newPartyMember, newPartyMemberVotingPower, initialDelegates[i]);
+            emit PartyCardAdded(party, newPartyMember, newPartyMemberVotingPower);
         }
     }
 }
