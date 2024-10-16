@@ -17,11 +17,7 @@ contract JoinFamAuthority {
     error UserAlreadyHasPartyCard();
     /// @notice Emitted when a party card is added via the `AddPartyCardsAuthority`
 
-    event PartyCardAdded(
-        address indexed party,
-        address indexed partyMember,
-        uint96 newIntrinsicVotingPower
-    );
+    event PartyCardAdded(address indexed party, address indexed partyMember, uint96 newIntrinsicVotingPower);
 
     /// @notice Atomically distributes new party cards and updates the total voting power as needed.
     /// @dev Caller must be the party and this contract must be an authority on the party
@@ -40,8 +36,8 @@ contract JoinFamAuthority {
             revert NoPartyMembers();
         }
         if (
-            newPartyMembersLength != newPartyMemberVotingPowers.length ||
-            newPartyMembersLength != initialDelegates.length
+            newPartyMembersLength != newPartyMemberVotingPowers.length
+                || newPartyMembersLength != initialDelegates.length
         ) {
             revert ArityMismatch();
         }
@@ -59,12 +55,7 @@ contract JoinFamAuthority {
         Party(payable(party)).increaseTotalVotingPower(addedVotingPower);
 
         for (uint256 i; i < newPartyMembersLength; ++i) {
-            mint(
-                party,
-                newPartyMembers[i],
-                newPartyMemberVotingPowers[i],
-                initialDelegates[i]
-            );
+            mint(party, newPartyMembers[i], newPartyMemberVotingPowers[i], initialDelegates[i]);
         }
     }
 
@@ -81,17 +72,11 @@ contract JoinFamAuthority {
     /// @param newPartyMember The address of the new party member
     /// @param newPartyMemberVotingPower The voting power for the new party card
     /// @param initialDelegate The initial delegate for the new party member
-    function mint(
-        address party,
-        address newPartyMember,
-        uint96 newPartyMemberVotingPower,
-        address initialDelegate
-    ) internal onlyNonMembers(party, newPartyMember) {
-        PartyGovernanceNFT(party).mint(
-            newPartyMember,
-            newPartyMemberVotingPower,
-            initialDelegate
-        );
+    function mint(address party, address newPartyMember, uint96 newPartyMemberVotingPower, address initialDelegate)
+        internal
+        onlyNonMembers(party, newPartyMember)
+    {
+        PartyGovernanceNFT(party).mint(newPartyMember, newPartyMemberVotingPower, initialDelegate);
         emit PartyCardAdded(party, newPartyMember, newPartyMemberVotingPower);
     }
 }
