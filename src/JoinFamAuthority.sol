@@ -18,6 +18,9 @@ contract JoinFamAuthority {
     error UserAlreadyHasPartyCard();
     /// @notice Returned if the caller is not authorized to perform the action
     error NotAuthorized();
+    /// @notice Returned if no Hypersub is set for the party
+    error NoHypersubSet();
+
     /// @notice Emitted when a party card is added via the `AddPartyCardsAuthority`
 
     /// @notice Emitted when a new party card is added to a party
@@ -55,7 +58,9 @@ contract JoinFamAuthority {
         }
 
         address payable hypersubAddress = partyToHypersub[party];
-        require(hypersubAddress != address(0), "No Hypersub set for this party");
+        if (hypersubAddress == address(0)) {
+            revert NoHypersubSet();
+        }
 
         uint96 addedVotingPower;
         for (uint256 i; i < newPartyMembersLength; ++i) {

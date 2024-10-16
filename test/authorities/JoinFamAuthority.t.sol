@@ -333,4 +333,32 @@ contract JoinFamAuthorityTest is SetupPartyHelper {
         // Verify that the party card was added
         assertEq(party.balanceOf(user), 1);
     }
+
+    function test_addPartyCards_requiresHypersubSet() public {
+        address[] memory newPartyMembers = new address[](1);
+        newPartyMembers[0] = subscriber;
+        uint96[] memory newPartyMemberVotingPowers = new uint96[](1);
+        newPartyMemberVotingPowers[0] = 100;
+        address[] memory initialDelegates = new address[](1);
+        initialDelegates[0] = _randomAddress();
+
+        vm.prank(hosts[0]);
+        authority.setHypersub(address(party), payable(address(0)));
+
+        // Try to add party cards without setting a Hypersub
+        vm.expectRevert(JoinFamAuthority.NoHypersubSet.selector);
+        vm.prank(address(party));
+        authority.addPartyCards(address(party), newPartyMembers, newPartyMemberVotingPowers, initialDelegates);
+
+        // Set the Hypersub for the new party
+        vm.prank(hosts[0]);
+        authority.setHypersub(address(party), payable(address(hypersub)));
+
+        // Now the addition should succeed
+        vm.prank(address(party));
+        authority.addPartyCards(address(party), newPartyMembers, newPartyMemberVotingPowers, initialDelegates);
+
+        // Verify that the party card was added
+        assertEq(party.balanceOf(subscriber), 1);
+    }
 }
