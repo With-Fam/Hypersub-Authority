@@ -208,4 +208,49 @@ contract JoinFamAuthorityTest is SetupPartyHelper {
         assertEq(party.balanceOf(newPartyMembers[0]), 1);
         assertEq(party.balanceOf(newPartyMembers[1]), 1);
     }
+
+    function testSetHypersub() public {
+        address partyAddress = address(party);
+        address hypersubAddress = _randomAddress();
+
+        vm.prank(hosts[0]);
+        authority.setHypersub(partyAddress, hypersubAddress);
+
+        assertEq(authority.partyToHypersub(partyAddress), hypersubAddress);
+    }
+
+    function testSetHypersubEmitsEvent() public {
+        address partyAddress = address(party);
+        address hypersubAddress = _randomAddress();
+
+        vm.expectEmit(true, true, false, false);
+        emit HypersubSet(partyAddress, hypersubAddress);
+
+        vm.prank(hosts[0]);
+        authority.setHypersub(partyAddress, hypersubAddress);
+    }
+
+    function testSetHypersubOnlyAuthorized() public {
+        address partyAddress = address(party);
+        address hypersubAddress = _randomAddress();
+        address unauthorizedUser = _randomAddress();
+
+        vm.prank(unauthorizedUser);
+        vm.expectRevert("Not authorized");
+        authority.setHypersub(partyAddress, hypersubAddress);
+    }
+
+    function testSetHypersubUpdateExisting() public {
+        address partyAddress = address(party);
+        address initialHypersubAddress = _randomAddress();
+        address newHypersubAddress = _randomAddress();
+
+        vm.prank(hosts[0]);
+        authority.setHypersub(partyAddress, initialHypersubAddress);
+        assertEq(authority.partyToHypersub(partyAddress), initialHypersubAddress);
+
+        vm.prank(hosts[0]);
+        authority.setHypersub(partyAddress, newHypersubAddress);
+        assertEq(authority.partyToHypersub(partyAddress), newHypersubAddress);
+    }
 }

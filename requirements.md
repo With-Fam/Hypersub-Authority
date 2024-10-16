@@ -48,7 +48,7 @@ The smart contract shall:
   ```solidity
   mapping(address => address) public partyToHypersub;
   ```
-- Implement access control to ensure only authorized entities (e.g., party owner or admin) can set the Hypersub address for a party.
+- Implement access control to ensure only a party host (party.isHost(address)) can set the Hypersub address for a party.
 - Emit a `HypersubSet` event when a Hypersub address is set for a party:
   ```solidity
   event HypersubSet(address indexed party, address indexed hypersubAddress);
