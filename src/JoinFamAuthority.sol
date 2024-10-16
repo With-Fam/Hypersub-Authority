@@ -3,6 +3,7 @@ pragma solidity ^0.8;
 
 import {Party} from "@party/contracts/party/Party.sol";
 import {PartyGovernanceNFT} from "@party/contracts/party/PartyGovernanceNFT.sol";
+import {SubscriptionTokenV1} from "./hypersub/SubscriptionTokenV1.sol";
 
 contract JoinFamAuthority {
     /// @notice Returned if the `AtomicManualParty` is created with no members
@@ -17,6 +18,11 @@ contract JoinFamAuthority {
     error UserAlreadyHasPartyCard();
     /// @notice Returned if the caller is not authorized to perform the action
     error NotAuthorized();
+    /// @notice Returned if no Hypersub is set for the party
+    error NoHypersubSet();
+    /// @notice Returned if a user doesn't have an active Hypersub subscription
+    error NoActiveSubscription();
+
     /// @notice Emitted when a party card is added via the `AddPartyCardsAuthority`
 
     /// @notice Emitted when a new party card is added to a party
@@ -28,7 +34,7 @@ contract JoinFamAuthority {
     event HypersubSet(address indexed party, address indexed hypersub);
 
     /// @notice Mapping of party addresses to their corresponding Hypersub addresses
-    mapping(address => address) public partyToHypersub;
+    mapping(address => address payable) public partyToHypersub;
 
     /// @notice Atomically distributes new party cards and updates the total voting power as needed.
     /// @dev Caller must be the party and this contract must be an authority on the party
@@ -61,6 +67,7 @@ contract JoinFamAuthority {
             if (newPartyMembers[i] == address(0)) {
                 revert InvalidPartyMember();
             }
+
             addedVotingPower += newPartyMemberVotingPowers[i];
         }
         Party(payable(party)).increaseTotalVotingPower(addedVotingPower);
@@ -78,14 +85,29 @@ contract JoinFamAuthority {
         _;
     }
 
+    /// @dev Modifier to check if the party has a Hypersub set
+    modifier onlyHypersubParties(address party) {
+        if (partyToHypersub[party] == address(0)) {
+            revert NoHypersubSet();
+        }
+        _;
+    }
+
+    /// @dev Modifier to check if the user has an active subscription
+    modifier onlyActiveSubscribers(address party, address subscriber) {
+        address payable hypersubAddress = partyToHypersub[party];
+        if (SubscriptionTokenV1(hypersubAddress).balanceOf(subscriber) == 0) {
+            revert NoActiveSubscription();
+        }
+        _;
+    }
+
     /// @dev Internal function to mint a new party card
-    /// @param party The address of the party
-    /// @param newPartyMember The address of the new party member
-    /// @param newPartyMemberVotingPower The voting power for the new party card
-    /// @param initialDelegate The initial delegate for the new party member
     function mint(address party, address newPartyMember, uint96 newPartyMemberVotingPower, address initialDelegate)
         internal
         onlyNonMembers(party, newPartyMember)
+        onlyHypersubParties(party)
+        onlyActiveSubscribers(party, newPartyMember)
     {
         PartyGovernanceNFT(party).mint(newPartyMember, newPartyMemberVotingPower, initialDelegate);
         emit PartyCardAdded(party, newPartyMember, newPartyMemberVotingPower);
@@ -94,7 +116,7 @@ contract JoinFamAuthority {
     /// @notice Sets the Hypersub address for a given party
     /// @param party The address of the party
     /// @param hypersub The address of the Hypersub
-    function setHypersub(address party, address hypersub) external onlyHosts(party) {
+    function setHypersub(address party, address payable hypersub) external onlyHosts(party) {
         partyToHypersub[party] = hypersub;
         emit HypersubSet(party, hypersub);
     }

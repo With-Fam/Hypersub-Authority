@@ -13,6 +13,7 @@ The JoinFamAuthority contract serves as an authority for managing party membersh
    - Adds new party cards to the specified party.
    - Can add multiple members in a single transaction.
    - Updates the total voting power of the party.
+   - Checks if each new member has an active Hypersub subscription.
    - Emits a `PartyCardAdded` event for each new member.
 
 2. `setHypersub(address party, address hypersub)`
@@ -26,6 +27,7 @@ The JoinFamAuthority contract serves as an authority for managing party membersh
 - Ensures voting power is always positive for new party cards.
 - Allows setting initial delegates for new party members.
 - Integrates with the Party Protocol's governance system.
+- Verifies active Hypersub subscriptions before minting party cards.
 
 ### Unit Tests
 
@@ -37,8 +39,20 @@ The contract includes comprehensive unit tests (in `JoinFamAuthority.t.sol`) to 
 4. `test_addPartyCard_integration`: Tests the integration with the Party Protocol's proposal system.
 5. `testSetHypersub`: Verifies the Hypersub setting functionality.
 6. `testSetHypersubOnlyAuthorized`: Ensures only authorized users (hosts) can set the Hypersub address.
+7. `test_addPartyCards_requiresActiveHypersubSubscription`: Verifies that only users with active Hypersub subscriptions can receive party cards.
+8. `test_addPartyCards_requiresHypersubSet`: Ensures that a Hypersub address must be set for the party before adding party cards.
 
-These tests cover various scenarios including error cases, authorization checks, and proper event emissions.
+### Hypersub Integration
+
+- The contract now checks the Hypersub subscription status of new members before minting party cards.
+- It uses the `balanceOf` function of the Hypersub contract to verify active subscriptions.
+- If a user doesn't have an active subscription, the `addPartyCards` function will revert with a `NoActiveSubscription` error.
+
+### Error Handling
+
+- `NoHypersubSet`: Thrown when trying to add party cards without setting a Hypersub address for the party.
+- `NoActiveSubscription`: Thrown when trying to add a party card for a user without an active Hypersub subscription.
+- `UserAlreadyHasPartyCard`: Thrown when trying to add a party card for a user who already has one.
 
 ### Build
 
@@ -74,8 +88,8 @@ $ anvil
 
 The JoinFamAuthority contract has been deployed to Base Sepolia testnet. Here are the latest deployment details:
 
-- **Contract Address**: `0x72BC2b2ceB62b6057580D09AcE62D76163F9dFb0`
-- **Transaction Hash**: `0xc77c595d20b52fcd9c1283404e32bd6c0a79aa58d8b763c3d1637f03b1f2f733`
+- **Contract Address**: `0xe9adD257EF20E6fE33A757c788941618E79c70D4`
+- **Transaction Hash**: `0x00d0f40b487489bcf2ee255a909dd5ced39e9f57ada9c0cf3919a142b8ff2384`
 - **Deployer Address**: `0x35CE1fb8CAa3758190ac65EDbcBC9647b8800e8f`
 
 To deploy the contract yourself, use the following command:
