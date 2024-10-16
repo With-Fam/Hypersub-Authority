@@ -11,6 +11,7 @@ contract JoinFamAuthorityTest is SetupPartyHelper {
     JoinFamAuthority authority;
 
     event PartyCardAdded(address indexed party, address indexed partyMember, uint96 newIntrinsicVotingPower);
+    event HypersubSet(address indexed party, address indexed hypersub);
 
     constructor() SetupPartyHelper(false) {}
 
@@ -236,7 +237,7 @@ contract JoinFamAuthorityTest is SetupPartyHelper {
         address unauthorizedUser = _randomAddress();
 
         vm.prank(unauthorizedUser);
-        vm.expectRevert("Not authorized");
+        vm.expectRevert(JoinFamAuthority.NotAuthorized.selector);
         authority.setHypersub(partyAddress, hypersubAddress);
     }
 
