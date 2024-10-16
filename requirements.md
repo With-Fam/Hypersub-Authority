@@ -53,6 +53,7 @@ The smart contract shall:
 - Before minting, verify that:
   1. The user has an active Hypersub subscription.
   2. The user's current balance of Party NFTs for the specified party is zero (partyNft.balanceOf(user) === 0).
+  - If partyNft.balanceOf(user) > 0, throw an error with the message: "UserAlreadyHasPartyCard".
 - If both conditions are met, mint a new Party Card to the user for the specified party.
 - Assign appropriate voting power to the newly minted Party Card based on the `newPartyMemberVotingPowers` parameter.
 - Set the initial delegate for each new party member using the `initialDelegates` parameter.
