@@ -95,27 +95,12 @@ contract JoinFamAuthorityTest is SetupPartyHelper {
         uint96 totalVotingPowerBefore = party.getGovernanceValues().totalVotingPower;
         uint96 tokenCount = party.tokenCount();
 
-        vm.expectEmit(true, true, true, true);
-        emit PartyCardAdded(address(party), newPartyMembers[0], newPartyMemberVotingPowers[0]);
-        vm.expectEmit(true, true, true, true);
-        emit PartyCardAdded(address(party), newPartyMembers[1], newPartyMemberVotingPowers[1]);
-        vm.expectEmit(true, true, true, true);
-        emit PartyCardAdded(address(party), newPartyMembers[2], newPartyMemberVotingPowers[2]);
-        vm.prank(address(party));
+        vm.expectRevert(JoinFamAuthority.UserAlreadyHasPartyCard.selector);
         authority.addPartyCards(address(party), newPartyMembers, newPartyMemberVotingPowers, initialDelegates);
 
-        uint96 totalVotingPowerAdded;
-        for (uint256 i; i < newPartyMembers.length; i++) {
-            uint256 tokenId = tokenCount + i + 1;
-
-            totalVotingPowerAdded += newPartyMemberVotingPowers[i];
-
-            assertEq(party.votingPowerByTokenId(tokenId), newPartyMemberVotingPowers[i]);
-            // Should only allow setting the initial delegate, not changing it
-            assertEq(party.delegationsByVoter(newPartyMembers[i]), initialDelegates[0]);
-        }
-        assertEq(party.getVotingPowerAt(initialDelegates[0], uint40(block.timestamp), 0), totalVotingPowerAdded);
-        assertEq(party.getGovernanceValues().totalVotingPower - totalVotingPowerBefore, totalVotingPowerAdded);
+        // Check that no party cards were added
+        assertEq(party.getGovernanceValues().totalVotingPower - totalVotingPowerBefore, 0);
+        assertEq(party.tokenCount() - tokenCount, 0);
     }
 
     function test_addPartyCard_cannotAddNoPartyCards() public {
@@ -199,5 +184,28 @@ contract JoinFamAuthorityTest is SetupPartyHelper {
             );
         }
         assertEq(party.getGovernanceValues().totalVotingPower - totalVotingPowerBefore, totalVotingPowerAdded);
+    }
+
+    function test_addPartyCards_userAlreadyHasPartyCard() public {
+        address[] memory newPartyMembers = new address[](2);
+        newPartyMembers[0] = _randomAddress();
+        newPartyMembers[1] = _randomAddress();
+        uint96[] memory newPartyMemberVotingPowers = new uint96[](2);
+        newPartyMemberVotingPowers[0] = 100;
+        newPartyMemberVotingPowers[1] = 200;
+        address[] memory initialDelegates = new address[](2);
+        initialDelegates[0] = _randomAddress();
+        initialDelegates[1] = _randomAddress();
+
+        // Mint the first Party Card
+        authority.addPartyCards(address(party), newPartyMembers, newPartyMemberVotingPowers, initialDelegates);
+
+        // Try to add Party Cards to the existing members
+        vm.expectRevert(JoinFamAuthority.UserAlreadyHasPartyCard.selector);
+        authority.addPartyCards(address(party), newPartyMembers, newPartyMemberVotingPowers, initialDelegates);
+
+        // Verify that only the initially minted Party Card exists
+        assertEq(party.balanceOf(newPartyMembers[0]), 1);
+        assertEq(party.balanceOf(newPartyMembers[1]), 1);
     }
 }
