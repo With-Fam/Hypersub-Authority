@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: GPL-3.0
-pragma solidity 0.8.20;
+pragma solidity ^0.8;
 
 import {Party} from "@party/contracts/party/Party.sol";
 import {PartyGovernanceNFT} from "@party/contracts/party/PartyGovernanceNFT.sol";
@@ -17,7 +17,11 @@ contract JoinFamAuthority {
     error UserAlreadyHasPartyCard();
     /// @notice Emitted when a party card is added via the `AddPartyCardsAuthority`
 
-    event PartyCardAdded(address indexed party, address indexed partyMember, uint96 newIntrinsicVotingPower);
+    event PartyCardAdded(
+        address indexed party,
+        address indexed partyMember,
+        uint96 newIntrinsicVotingPower
+    );
 
     /// @notice Atomically distributes new party cards and updates the total voting power as needed.
     /// @dev Caller must be the party and this contract must be an authority on the party
@@ -36,8 +40,8 @@ contract JoinFamAuthority {
             revert NoPartyMembers();
         }
         if (
-            newPartyMembersLength != newPartyMemberVotingPowers.length
-                || newPartyMembersLength != initialDelegates.length
+            newPartyMembersLength != newPartyMemberVotingPowers.length ||
+            newPartyMembersLength != initialDelegates.length
         ) {
             revert ArityMismatch();
         }
@@ -55,16 +59,39 @@ contract JoinFamAuthority {
         Party(payable(party)).increaseTotalVotingPower(addedVotingPower);
 
         for (uint256 i; i < newPartyMembersLength; ++i) {
-            address newPartyMember = newPartyMembers[i];
-            uint96 newPartyMemberVotingPower = newPartyMemberVotingPowers[i];
-
-            // Check if the user already has a Party Card
-            if (PartyGovernanceNFT(party).balanceOf(newPartyMember) > 0) {
-                revert UserAlreadyHasPartyCard();
-            }
-
-            PartyGovernanceNFT(party).mint(newPartyMember, newPartyMemberVotingPower, initialDelegates[i]);
-            emit PartyCardAdded(party, newPartyMember, newPartyMemberVotingPower);
+            mint(
+                party,
+                newPartyMembers[i],
+                newPartyMemberVotingPowers[i],
+                initialDelegates[i]
+            );
         }
+    }
+
+    /// @dev Modifier to check if the user doesn't already have a Party Card
+    modifier onlyNonMembers(address party, address newPartyMember) {
+        if (PartyGovernanceNFT(party).balanceOf(newPartyMember) > 0) {
+            revert UserAlreadyHasPartyCard();
+        }
+        _;
+    }
+
+    /// @dev Internal function to mint a new party card
+    /// @param party The address of the party
+    /// @param newPartyMember The address of the new party member
+    /// @param newPartyMemberVotingPower The voting power for the new party card
+    /// @param initialDelegate The initial delegate for the new party member
+    function mint(
+        address party,
+        address newPartyMember,
+        uint96 newPartyMemberVotingPower,
+        address initialDelegate
+    ) internal onlyNonMembers(party, newPartyMember) {
+        PartyGovernanceNFT(party).mint(
+            newPartyMember,
+            newPartyMemberVotingPower,
+            initialDelegate
+        );
+        emit PartyCardAdded(party, newPartyMember, newPartyMemberVotingPower);
     }
 }
