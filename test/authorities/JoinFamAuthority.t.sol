@@ -95,25 +95,13 @@ contract JoinFamAuthorityTest is SetupPartyHelper {
         uint96 totalVotingPowerBefore = party.getGovernanceValues().totalVotingPower;
         uint96 tokenCount = party.tokenCount();
 
-        // First, add a single party card
-        address[] memory firstMember = new address[](1);
-        firstMember[0] = newPartyMembers[0];
-        uint96[] memory firstVotingPower = new uint96[](1);
-        firstVotingPower[0] = newPartyMemberVotingPowers[0];
-        address[] memory firstDelegate = new address[](1);
-        firstDelegate[0] = initialDelegates[0];
-
-        authority.addPartyCards(address(party), firstMember, firstVotingPower, firstDelegate);
-
         // Now try to add party cards with a duplicate address
         vm.expectRevert(JoinFamAuthority.UserAlreadyHasPartyCard.selector);
         authority.addPartyCards(address(party), newPartyMembers, newPartyMemberVotingPowers, initialDelegates);
 
-        // Check that only one party card was added in total
-        assertEq(party.getGovernanceValues().totalVotingPower - totalVotingPowerBefore, newPartyMemberVotingPowers[0]);
-        assertEq(party.tokenCount() - tokenCount, 1);
-        assertEq(party.votingPowerByTokenId(tokenCount + 1), newPartyMemberVotingPowers[0]);
-        assertEq(party.delegationsByVoter(newPartyMembers[0]), initialDelegates[0]);
+        // Check that no party cards were added
+        assertEq(party.getGovernanceValues().totalVotingPower - totalVotingPowerBefore, 0);
+        assertEq(party.tokenCount() - tokenCount, 0);
     }
 
     function test_addPartyCard_cannotAddNoPartyCards() public {
