@@ -3,6 +3,7 @@ pragma solidity ^0.8;
 
 import {Party} from "@party/contracts/party/Party.sol";
 import {PartyGovernanceNFT} from "@party/contracts/party/PartyGovernanceNFT.sol";
+import {SubscriptionTokenV1} from "./hypersub/SubscriptionTokenV1.sol";
 
 contract JoinFamAuthority {
     /// @notice Returned if the `AtomicManualParty` is created with no members
@@ -28,7 +29,7 @@ contract JoinFamAuthority {
     event HypersubSet(address indexed party, address indexed hypersub);
 
     /// @notice Mapping of party addresses to their corresponding Hypersub addresses
-    mapping(address => address) public partyToHypersub;
+    mapping(address => address payable) public partyToHypersub;
 
     /// @notice Atomically distributes new party cards and updates the total voting power as needed.
     /// @dev Caller must be the party and this contract must be an authority on the party
@@ -53,6 +54,9 @@ contract JoinFamAuthority {
             revert ArityMismatch();
         }
 
+        address payable hypersubAddress = partyToHypersub[party];
+        require(hypersubAddress != address(0), "No Hypersub set for this party");
+
         uint96 addedVotingPower;
         for (uint256 i; i < newPartyMembersLength; ++i) {
             if (newPartyMemberVotingPowers[i] == 0) {
@@ -61,6 +65,11 @@ contract JoinFamAuthority {
             if (newPartyMembers[i] == address(0)) {
                 revert InvalidPartyMember();
             }
+            // Check if the user has an active Hypersub subscription
+            require(
+                SubscriptionTokenV1(hypersubAddress).balanceOf(newPartyMembers[i]) > 0,
+                "User does not have an active Hypersub subscription"
+            );
             addedVotingPower += newPartyMemberVotingPowers[i];
         }
         Party(payable(party)).increaseTotalVotingPower(addedVotingPower);
@@ -94,7 +103,7 @@ contract JoinFamAuthority {
     /// @notice Sets the Hypersub address for a given party
     /// @param party The address of the party
     /// @param hypersub The address of the Hypersub
-    function setHypersub(address party, address hypersub) external onlyHosts(party) {
+    function setHypersub(address party, address payable hypersub) external onlyHosts(party) {
         partyToHypersub[party] = hypersub;
         emit HypersubSet(party, hypersub);
     }
