@@ -95,7 +95,6 @@ contract JoinFamAuthorityTest is SetupPartyHelper {
         uint96 totalVotingPowerBefore = party.getGovernanceValues().totalVotingPower;
         uint96 tokenCount = party.tokenCount();
 
-        // Now try to add party cards with a duplicate address
         vm.expectRevert(JoinFamAuthority.UserAlreadyHasPartyCard.selector);
         authority.addPartyCards(address(party), newPartyMembers, newPartyMemberVotingPowers, initialDelegates);
 
