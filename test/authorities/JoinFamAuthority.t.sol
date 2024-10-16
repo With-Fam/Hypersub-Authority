@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: UNLICENSED
 pragma solidity ^0.8;
 
-import {SetupPartyHelper} from "@party/test/utils/SetupPartyHelper.sol";
+import {SetupPartyHelper} from "../utils/SetupPartyHelper.sol";
 import {Party, PartyGovernance, PartyGovernanceNFT} from "@party/contracts/party/Party.sol";
 import {ProposalExecutionEngine} from "@party/contracts/proposals/ProposalExecutionEngine.sol";
 import {JoinFamAuthority} from "../../src/JoinFamAuthority.sol";
