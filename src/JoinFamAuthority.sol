@@ -15,9 +15,20 @@ contract JoinFamAuthority {
     error InvalidPartyMemberVotingPower();
     /// @notice Returned if a party card would be issued to a user who already has a party card
     error UserAlreadyHasPartyCard();
+    /// @notice Returned if the caller is not authorized to perform the action
+    error NotAuthorized();
     /// @notice Emitted when a party card is added via the `AddPartyCardsAuthority`
 
+    /// @notice Emitted when a new party card is added to a party
+    /// @param party The address of the party to which the card was added
+    /// @param partyMember The address of the member who received the new party card
+    /// @param newIntrinsicVotingPower The voting power assigned to the new party card
     event PartyCardAdded(address indexed party, address indexed partyMember, uint96 newIntrinsicVotingPower);
+    /// @notice Emitted when a Hypersub is set for a party
+    event HypersubSet(address indexed party, address indexed hypersub);
+
+    /// @notice Mapping of party addresses to their corresponding Hypersub addresses
+    mapping(address => address) public partyToHypersub;
 
     /// @notice Atomically distributes new party cards and updates the total voting power as needed.
     /// @dev Caller must be the party and this contract must be an authority on the party
@@ -78,5 +89,21 @@ contract JoinFamAuthority {
     {
         PartyGovernanceNFT(party).mint(newPartyMember, newPartyMemberVotingPower, initialDelegate);
         emit PartyCardAdded(party, newPartyMember, newPartyMemberVotingPower);
+    }
+
+    /// @notice Sets the Hypersub address for a given party
+    /// @param party The address of the party
+    /// @param hypersub The address of the Hypersub
+    function setHypersub(address party, address hypersub) external onlyHosts(party) {
+        partyToHypersub[party] = hypersub;
+        emit HypersubSet(party, hypersub);
+    }
+
+    /// @dev Modifier to check if the caller is a host of the party
+    modifier onlyHosts(address party) {
+        if (!Party(payable(party)).isHost(msg.sender)) {
+            revert NotAuthorized();
+        }
+        _;
     }
 }
