@@ -200,7 +200,7 @@ contract JoinFamAuthorityTest is SetupPartyHelper {
         // Mint the first Party Card
         authority.addPartyCards(address(party), newPartyMembers, newPartyMemberVotingPowers, initialDelegates);
 
-        // Try to add Party Cards, including the member who already has one
+        // Try to add Party Cards to the existing members
         vm.expectRevert(JoinFamAuthority.UserAlreadyHasPartyCard.selector);
         authority.addPartyCards(address(party), newPartyMembers, newPartyMemberVotingPowers, initialDelegates);
 
