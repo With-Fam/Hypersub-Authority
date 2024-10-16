@@ -20,6 +20,8 @@ contract JoinFamAuthority {
     error NotAuthorized();
     /// @notice Returned if no Hypersub is set for the party
     error NoHypersubSet();
+    /// @notice Returned if a user doesn't have an active Hypersub subscription
+    error NoActiveSubscription();
 
     /// @notice Emitted when a party card is added via the `AddPartyCardsAuthority`
 
@@ -57,11 +59,6 @@ contract JoinFamAuthority {
             revert ArityMismatch();
         }
 
-        address payable hypersubAddress = partyToHypersub[party];
-        if (hypersubAddress == address(0)) {
-            revert NoHypersubSet();
-        }
-
         uint96 addedVotingPower;
         for (uint256 i; i < newPartyMembersLength; ++i) {
             if (newPartyMemberVotingPowers[i] == 0) {
@@ -70,11 +67,7 @@ contract JoinFamAuthority {
             if (newPartyMembers[i] == address(0)) {
                 revert InvalidPartyMember();
             }
-            // Check if the user has an active Hypersub subscription
-            require(
-                SubscriptionTokenV1(hypersubAddress).balanceOf(newPartyMembers[i]) > 0,
-                "User does not have an active Hypersub subscription"
-            );
+
             addedVotingPower += newPartyMemberVotingPowers[i];
         }
         Party(payable(party)).increaseTotalVotingPower(addedVotingPower);
@@ -92,14 +85,29 @@ contract JoinFamAuthority {
         _;
     }
 
+    /// @dev Modifier to check if the party has a Hypersub set
+    modifier onlyHypersubParties(address party) {
+        if (partyToHypersub[party] == address(0)) {
+            revert NoHypersubSet();
+        }
+        _;
+    }
+
+    /// @dev Modifier to check if the user has an active subscription
+    modifier onlyActiveSubscribers(address party, address subscriber) {
+        address payable hypersubAddress = partyToHypersub[party];
+        if (SubscriptionTokenV1(hypersubAddress).balanceOf(subscriber) == 0) {
+            revert NoActiveSubscription();
+        }
+        _;
+    }
+
     /// @dev Internal function to mint a new party card
-    /// @param party The address of the party
-    /// @param newPartyMember The address of the new party member
-    /// @param newPartyMemberVotingPower The voting power for the new party card
-    /// @param initialDelegate The initial delegate for the new party member
     function mint(address party, address newPartyMember, uint96 newPartyMemberVotingPower, address initialDelegate)
         internal
         onlyNonMembers(party, newPartyMember)
+        onlyHypersubParties(party)
+        onlyActiveSubscribers(party, newPartyMember)
     {
         PartyGovernanceNFT(party).mint(newPartyMember, newPartyMemberVotingPower, initialDelegate);
         emit PartyCardAdded(party, newPartyMember, newPartyMemberVotingPower);

@@ -317,7 +317,7 @@ contract JoinFamAuthorityTest is SetupPartyHelper {
         authority.setHypersub(address(party), payable(address(hypersub)));
 
         // Try to add party card without an active subscription
-        vm.expectRevert("User does not have an active Hypersub subscription");
+        vm.expectRevert(JoinFamAuthority.NoActiveSubscription.selector);
         vm.prank(address(party));
         authority.addPartyCards(address(party), newPartyMembers, newPartyMemberVotingPowers, initialDelegates);
 
