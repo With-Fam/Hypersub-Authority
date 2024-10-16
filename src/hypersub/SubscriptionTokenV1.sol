@@ -4,11 +4,8 @@ pragma solidity ^0.8;
 
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
-import "@openzeppelin-upgradeable/contracts/utils/StringsUpgradeable.sol";
 import "@openzeppelin-upgradeable/contracts/access/Ownable2StepUpgradeable.sol";
-import "@openzeppelin-upgradeable/contracts/security/PausableUpgradeable.sol";
 import "@openzeppelin-upgradeable/contracts/token/ERC721/ERC721Upgradeable.sol";
-import "@openzeppelin-upgradeable/contracts/security/ReentrancyGuardUpgradeable.sol";
 import "./Shared.sol";
 
 /**
@@ -21,14 +18,8 @@ import "./Shared.sol";
  *      additional functionalities for granting time, refunding accounts, fees, rewards, etc. This contract is designed to be used with
  *      Clones, but is not designed to be upgradeable. Added functionality will come with new versions.
  */
-contract SubscriptionTokenV1 is
-    ERC721Upgradeable,
-    Ownable2StepUpgradeable,
-    ReentrancyGuardUpgradeable,
-    PausableUpgradeable
-{
+contract SubscriptionTokenV1 is ERC721Upgradeable, Ownable2StepUpgradeable {
     using SafeERC20 for IERC20;
-    using StringsUpgradeable for uint256;
 
     /// @dev The maximum number of reward halvings (limiting this prevents overflow)
     uint256 private constant _MAX_REWARD_HALVINGS = 32;
@@ -228,8 +219,6 @@ contract SubscriptionTokenV1 is
 
         __ERC721_init(params.name, params.symbol);
         _transferOwnership(params.owner);
-        __Pausable_init_unchained();
-        __ReentrancyGuard_init();
         _contractURI = params.contractUri;
         _tokenURI = params.tokenUri;
         _tokensPerSecond = params.tokensPerSecond;
@@ -389,20 +378,6 @@ contract SubscriptionTokenV1 is
     }
 
     /**
-     * @notice Pause minting to allow for migrations or other actions
-     */
-    function pause() external onlyOwner {
-        _pause();
-    }
-
-    /**
-     * @notice Unpause to resume subscription minting
-     */
-    function unpause() external onlyOwner {
-        _unpause();
-    }
-
-    /**
      * @notice Update the maximum number of tokens (subscriptions)
      * @param supplyCap the new supply cap (must be greater than token count or 0 for unlimited)
      */
@@ -430,7 +405,7 @@ contract SubscriptionTokenV1 is
      * @param account the account to mint or renew time for
      * @param numTokens the amount of ERC20 tokens or native tokens to transfer
      */
-    function mintFor(address account, uint256 numTokens) public payable whenNotPaused validAmount(numTokens) {
+    function mintFor(address account, uint256 numTokens) public payable validAmount(numTokens) {
         uint256 finalAmount = _transferIn(msg.sender, numTokens);
         _purchaseTime(account, finalAmount);
     }
@@ -445,7 +420,6 @@ contract SubscriptionTokenV1 is
     function mintWithReferralFor(address account, uint256 numTokens, uint256 referralCode, address referrer)
         public
         payable
-        whenNotPaused
         validAmount(numTokens)
     {
         require(referrer != address(0), "Referrer cannot be 0x0");
@@ -629,7 +603,7 @@ contract SubscriptionTokenV1 is
     }
 
     /// @dev Transfer tokens into the contract, either native or ERC20
-    function _transferIn(address from, uint256 amount) internal nonReentrant returns (uint256) {
+    function _transferIn(address from, uint256 amount) internal returns (uint256) {
         if (!_erc20) {
             require(msg.value == amount, "Purchase amount must match value sent");
             _tokensIn += amount;
@@ -655,7 +629,7 @@ contract SubscriptionTokenV1 is
     }
 
     /// @dev Transfer tokens out of the contract, either native or ERC20
-    function _transferOut(address to, uint256 amount) internal nonReentrant {
+    function _transferOut(address to, uint256 amount) internal {
         _tokensOut += amount;
         if (_erc20) {
             _token.safeTransfer(to, amount);
@@ -964,12 +938,10 @@ contract SubscriptionTokenV1 is
      * @return uri the URI for the token
      */
     function tokenURI(uint256 tokenId) public view override returns (string memory uri) {
-        _requireMinted(tokenId);
-
         bytes memory str = bytes(_tokenURI);
         uint256 len = str.length;
         if (str[len - 1] == "/") {
-            return string(abi.encodePacked(_tokenURI, tokenId.toString()));
+            return string(abi.encodePacked(_tokenURI, "1"));
         }
 
         return _tokenURI;
@@ -995,28 +967,7 @@ contract SubscriptionTokenV1 is
      */
     function renounceOwnership() public override onlyOwner {
         _transferAllBalances(msg.sender);
-        _pause();
         _transferOwnership(address(0));
-    }
-
-    /// @dev Transfers may occur if the destination does not have a subscription
-    function _beforeTokenTransfer(
-        address from,
-        address to,
-        uint256,
-        /* tokenId */
-        uint256 /* batchSize */
-    ) internal override {
-        if (from == address(0)) {
-            return;
-        }
-
-        require(_subscriptions[to].tokenId == 0, "Cannot transfer to existing subscribers");
-        if (to != address(0)) {
-            _subscriptions[to] = _subscriptions[from];
-        }
-
-        delete _subscriptions[from];
     }
 
     //////////////////////
