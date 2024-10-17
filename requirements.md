@@ -85,13 +85,26 @@ The smart contract shall:
 
 The smart contract shall:
 
-- Implement the reference functionality as demonstrated in the `./src/AddPartyCardsAuthority.sol` example file, adapted for Party Card removal.
-- Call the `burn` function of the `./src/PartyGovernanceNFT.sol` contract to remove Party Cards.
+- Implement a `removePartyCards` function with the following signature:
+  ```solidity
+  function removePartyCards(address party, uint256[] memory tokenIds) external
+  ```
 - Before burning, verify that:
-  1. The user does not have an active Hypersub subscription.
+  1. The user does not have an active Hypersub subscription by checking `hypersub.balanceOf(user) == 0`, where `hypersub` is the address stored in `partyToHypersub[party]`.
   2. The user's current balance of Party NFTs for this specific party is greater than zero (partyNft.balanceOf(user) > 0).
-- Allow the burning of Party Cards from a member who's hypersub subscription has expired, effectively ending the user's membership in the party.
-- Remove membership based on the provided tokenId.
+- Call the `burn` function of the `PartyGovernanceNFT` contract to remove Party Cards:
+  ```solidity
+  function burn(uint256[] memory tokenIds) public onlyAuthority
+  ```
+- Ensure that the `JoinFamAuthority` contract has the authority to call the `burn` function.
+- Handle the case where burning is only allowed before the party has started (when `_governanceValues.totalVotingPower == 0`).
+- Allow the burning of Party Cards from a member whose Hypersub subscription has expired, effectively ending the user's membership in the party.
+- Remove membership based on the provided tokenIds.
+- Implement proper error handling for cases such as:
+  - Invalid party address
+  - No token IDs provided
+  - User still has an active Hypersub subscription
+- Emit a `PartyCardRemoved` event for each successfully burned Party Card, including the party address and token ID.
 
 ### 3.3 Subscription and Membership Management
 
