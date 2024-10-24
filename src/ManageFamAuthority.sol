@@ -33,11 +33,7 @@ contract ManageFamAuthority {
     /// @param party The address of the party to which the card was added
     /// @param partyMember The address of the member who received the new party card
     /// @param newIntrinsicVotingPower The voting power assigned to the new party card
-    event PartyCardAdded(
-        address indexed party,
-        address indexed partyMember,
-        uint96 newIntrinsicVotingPower
-    );
+    event PartyCardAdded(address indexed party, address indexed partyMember, uint96 newIntrinsicVotingPower);
     /// @notice Emitted when a Hypersub is set for a party
     event HypersubSet(address indexed party, address indexed hypersub);
     /// @notice Emitted when a party card is removed from a party
@@ -65,8 +61,8 @@ contract ManageFamAuthority {
             revert NoPartyMembers();
         }
         if (
-            newPartyMembersLength != newPartyMemberVotingPowers.length ||
-            newPartyMembersLength != initialDelegates.length
+            newPartyMembersLength != newPartyMemberVotingPowers.length
+                || newPartyMembersLength != initialDelegates.length
         ) {
             revert ArityMismatch();
         }
@@ -85,12 +81,7 @@ contract ManageFamAuthority {
         Party(payable(party)).increaseTotalVotingPower(addedVotingPower);
 
         for (uint256 i; i < newPartyMembersLength; ++i) {
-            mint(
-                party,
-                newPartyMembers[i],
-                newPartyMemberVotingPowers[i],
-                initialDelegates[i]
-            );
+            mint(party, newPartyMembers[i], newPartyMemberVotingPowers[i], initialDelegates[i]);
         }
     }
 
@@ -132,47 +123,29 @@ contract ManageFamAuthority {
     /// @param hypersubAddress The address of the Hypersub
     /// @param tokenId The ID of the party card
     /// @notice Reverts if the owner of the token still has an active subscription
-    modifier onlyUnsubscribed(
-        address party,
-        address hypersubAddress,
-        uint256 tokenId
-    ) {
+    modifier onlyUnsubscribed(address party, address hypersubAddress, uint256 tokenId) {
         address owner = PartyGovernanceNFT(party).ownerOf(tokenId);
-        if (
-            SubscriptionTokenV1(payable(hypersubAddress)).balanceOf(owner) > 0
-        ) {
+        if (SubscriptionTokenV1(payable(hypersubAddress)).balanceOf(owner) > 0) {
             revert ActiveSubscription();
         }
         _;
     }
 
     /// @dev Internal function to mint a new party card
-    function mint(
-        address party,
-        address newPartyMember,
-        uint96 newPartyMemberVotingPower,
-        address initialDelegate
-    )
+    function mint(address party, address newPartyMember, uint96 newPartyMemberVotingPower, address initialDelegate)
         internal
         onlyNonMembers(party, newPartyMember)
         onlyHypersubParties(party)
         onlySubscribed(party, newPartyMember)
     {
-        PartyGovernanceNFT(party).mint(
-            newPartyMember,
-            newPartyMemberVotingPower,
-            initialDelegate
-        );
+        PartyGovernanceNFT(party).mint(newPartyMember, newPartyMemberVotingPower, initialDelegate);
         emit PartyCardAdded(party, newPartyMember, newPartyMemberVotingPower);
     }
 
     /// @notice Sets the Hypersub address for a given party
     /// @param party The address of the party
     /// @param hypersub The address of the Hypersub
-    function setHypersub(
-        address party,
-        address payable hypersub
-    ) external onlyHosts(party) {
+    function setHypersub(address party, address payable hypersub) external onlyHosts(party) {
         partyToHypersub[party] = hypersub;
         emit HypersubSet(party, hypersub);
     }
@@ -188,10 +161,7 @@ contract ManageFamAuthority {
     /// @notice Removes party cards from members with expired subscriptions
     /// @param party The address of the party to remove cards from
     /// @param tokenIds The IDs of the party cards to remove
-    function removePartyCards(
-        address party,
-        uint256[] calldata tokenIds
-    ) external {
+    function removePartyCards(address party, uint256[] calldata tokenIds) external {
         if (tokenIds.length == 0) {
             revert NoTokenIds();
         }
@@ -207,11 +177,7 @@ contract ManageFamAuthority {
     /// @param party The address of the party
     /// @param tokenId The ID of the party card to burn
     /// @param hypersubAddress The address of the Hypersub
-    function burn(
-        address party,
-        uint256 tokenId,
-        address payable hypersubAddress
-    )
+    function burn(address party, uint256 tokenId, address payable hypersubAddress)
         internal
         onlyHypersubParties(party)
         onlyUnsubscribed(party, hypersubAddress, tokenId)
