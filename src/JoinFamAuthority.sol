@@ -86,6 +86,9 @@ contract JoinFamAuthority {
     }
 
     /// @dev Modifier to check if the user doesn't already have a Party Card
+    /// @param party The address of the party
+    /// @param newPartyMember The address of the new party member
+    /// @notice Reverts if the new party member already has a party card
     modifier onlyNonMembers(address party, address newPartyMember) {
         if (PartyGovernanceNFT(party).balanceOf(newPartyMember) > 0) {
             revert UserAlreadyHasPartyCard();
@@ -94,6 +97,8 @@ contract JoinFamAuthority {
     }
 
     /// @dev Modifier to check if the party has a Hypersub set
+    /// @param party The address of the party
+    /// @notice Reverts if no Hypersub is set for the party
     modifier onlyHypersubParties(address party) {
         if (partyToHypersub[party] == address(0)) {
             revert NoHypersubSet();
@@ -102,10 +107,24 @@ contract JoinFamAuthority {
     }
 
     /// @dev Modifier to check if the user has an active subscription
-    modifier onlyActiveSubscribers(address party, address subscriber) {
+    /// @param party The address of the party
+    /// @param subscriber The address of the subscriber
+    /// @notice Reverts if the subscriber does not have an active subscription
+    modifier onlySubscribed(address party, address subscriber) {
         address payable hypersubAddress = partyToHypersub[party];
         if (SubscriptionTokenV1(hypersubAddress).balanceOf(subscriber) == 0) {
             revert NoActiveSubscription();
+        }
+        _;
+    }
+
+    /// @dev Modifier to check if the user does not have an active subscription
+    /// @param hypersubAddress The address of the Hypersub
+    /// @param owner The address of the owner
+    /// @notice Reverts if the owner still has an active subscription
+    modifier onlyUnsubscribed(address hypersubAddress, address owner) {
+        if (SubscriptionTokenV1(payable(hypersubAddress)).balanceOf(owner) > 0) {
+            revert ActiveSubscription();
         }
         _;
     }
@@ -115,7 +134,7 @@ contract JoinFamAuthority {
         internal
         onlyNonMembers(party, newPartyMember)
         onlyHypersubParties(party)
-        onlyActiveSubscribers(party, newPartyMember)
+        onlySubscribed(party, newPartyMember)
     {
         PartyGovernanceNFT(party).mint(newPartyMember, newPartyMemberVotingPower, initialDelegate);
         emit PartyCardAdded(party, newPartyMember, newPartyMemberVotingPower);
@@ -146,20 +165,28 @@ contract JoinFamAuthority {
         }
 
         address payable hypersubAddress = partyToHypersub[party];
-        if (hypersubAddress == address(0)) {
-            revert NoHypersubSet();
-        }
 
         for (uint256 i = 0; i < tokenIds.length; i++) {
-            uint256 tokenId = tokenIds[i];
-            address owner = PartyGovernanceNFT(party).ownerOf(tokenId);
-
-            if (SubscriptionTokenV1(hypersubAddress).balanceOf(owner) > 0) {
-                revert ActiveSubscription();
-            }
-
-            PartyGovernanceNFT(party).burn(tokenId);
-            emit PartyCardRemoved(party, tokenId);
+            burn(party, tokenIds[i], hypersubAddress);
         }
+    }
+
+    /// @dev Internal function to burn a party card
+    /// @param party The address of the party
+    /// @param tokenId The ID of the party card to burn
+    /// @param hypersubAddress The address of the Hypersub
+    function burn(address party, uint256 tokenId, address payable hypersubAddress)
+        internal
+        onlyHypersubParties(party)
+        onlyUnsubscribed(hypersubAddress, msg.sender)
+    {
+        address owner = PartyGovernanceNFT(party).ownerOf(tokenId);
+
+        if (SubscriptionTokenV1(hypersubAddress).balanceOf(owner) > 0) {
+            revert ActiveSubscription();
+        }
+
+        PartyGovernanceNFT(party).burn(tokenId);
+        emit PartyCardRemoved(party, tokenId);
     }
 }
