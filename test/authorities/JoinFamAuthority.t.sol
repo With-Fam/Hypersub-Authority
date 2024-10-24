@@ -219,7 +219,7 @@ contract JoinFamAuthorityTest is SetupPartyHelper {
         emit log_address(subscriber);
         emit log_address(subscriberTwo);
         emit log_address(subscriberThree);
-        proposePassAndExecuteProposal(proposal);
+        _proposePassAndExecuteProposal(proposal);
 
         // Check that the new members were added and the total voting power was updated
         uint96 totalVotingPowerAdded;
