@@ -119,10 +119,12 @@ contract JoinFamAuthority {
     }
 
     /// @dev Modifier to check if the user does not have an active subscription
+    /// @param party The address of the party
     /// @param hypersubAddress The address of the Hypersub
-    /// @param owner The address of the owner
-    /// @notice Reverts if the owner still has an active subscription
-    modifier onlyUnsubscribed(address hypersubAddress, address owner) {
+    /// @param tokenId The ID of the party card
+    /// @notice Reverts if the owner of the token still has an active subscription
+    modifier onlyUnsubscribed(address party, address hypersubAddress, uint256 tokenId) {
+        address owner = PartyGovernanceNFT(party).ownerOf(tokenId);
         if (SubscriptionTokenV1(payable(hypersubAddress)).balanceOf(owner) > 0) {
             revert ActiveSubscription();
         }
@@ -178,14 +180,8 @@ contract JoinFamAuthority {
     function burn(address party, uint256 tokenId, address payable hypersubAddress)
         internal
         onlyHypersubParties(party)
-        onlyUnsubscribed(hypersubAddress, msg.sender)
+        onlyUnsubscribed(party, hypersubAddress, tokenId)
     {
-        address owner = PartyGovernanceNFT(party).ownerOf(tokenId);
-
-        if (SubscriptionTokenV1(hypersubAddress).balanceOf(owner) > 0) {
-            revert ActiveSubscription();
-        }
-
         PartyGovernanceNFT(party).burn(tokenId);
         emit PartyCardRemoved(party, tokenId);
     }
