@@ -403,6 +403,7 @@ contract JoinFamAuthorityTest is SetupPartyHelper {
 
         vm.prank(address(party));
         authority.addPartyCards(address(party), newPartyMembers, newPartyMemberVotingPowers, initialDelegates);
+        assertEq(party.balanceOf(subscriber), 1);
 
         uint256[] memory tokenIds = new uint256[](1);
         tokenIds[0] = party.tokenCount();
