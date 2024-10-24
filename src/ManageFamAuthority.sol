@@ -5,7 +5,7 @@ import {Party} from "@party/contracts/party/Party.sol";
 import {PartyGovernanceNFT} from "@party/contracts/party/PartyGovernanceNFT.sol";
 import {SubscriptionTokenV1} from "./hypersub/SubscriptionTokenV1.sol";
 
-contract JoinFamAuthority {
+contract ManageFamAuthority {
     /// @notice Returned if the `AtomicManualParty` is created with no members
     error NoPartyMembers();
     /// @notice Returned if the lengths of `partyMembers` and `partyMemberVotingPowers` do not match

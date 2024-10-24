@@ -4,14 +4,14 @@ pragma solidity ^0.8.20;
 import {SetupPartyHelper} from "../utils/SetupPartyHelper.sol";
 import {Party, PartyGovernance, PartyGovernanceNFT} from "@party/contracts/party/Party.sol";
 import {ProposalExecutionEngine} from "@party/contracts/proposals/ProposalExecutionEngine.sol";
-import {JoinFamAuthority} from "../../src/JoinFamAuthority.sol";
+import {ManageFamAuthority} from "../../src/ManageFamAuthority.sol";
 import {ArbitraryCallsProposal} from "@party/contracts/proposals/ArbitraryCallsProposal.sol";
 import {SubscriptionTokenV1Factory} from "../../src/hypersub/SubscriptionTokenV1Factory.sol";
 import {SubscriptionTokenV1} from "../../src/hypersub/SubscriptionTokenV1.sol";
 import {Shared} from "../../src/hypersub/Shared.sol";
 
-contract JoinFamAuthorityTest is SetupPartyHelper {
-    JoinFamAuthority authority;
+contract ManageFamAuthorityTest is SetupPartyHelper {
+    ManageFamAuthority authority;
     address subscriber;
     address subscriberTwo;
     address subscriberThree;
@@ -28,7 +28,7 @@ contract JoinFamAuthorityTest is SetupPartyHelper {
     function setUp() public override {
         super.setUp();
 
-        authority = new JoinFamAuthority();
+        authority = new ManageFamAuthority();
 
         // Add as authority to the Party to be able to mint cards
         vm.prank(address(party));
@@ -139,7 +139,7 @@ contract JoinFamAuthorityTest is SetupPartyHelper {
         uint96 totalVotingPowerBefore = party.getGovernanceValues().totalVotingPower;
         uint96 tokenCount = party.tokenCount();
 
-        vm.expectRevert(JoinFamAuthority.UserAlreadyHasPartyCard.selector);
+        vm.expectRevert(ManageFamAuthority.UserAlreadyHasPartyCard.selector);
         authority.addPartyCards(address(party), newPartyMembers, newPartyMemberVotingPowers, initialDelegates);
 
         // Check that no party cards were added
@@ -152,7 +152,7 @@ contract JoinFamAuthorityTest is SetupPartyHelper {
         uint96[] memory newPartyMemberVotingPowers;
         address[] memory initialDelegates;
 
-        vm.expectRevert(JoinFamAuthority.NoPartyMembers.selector);
+        vm.expectRevert(ManageFamAuthority.NoPartyMembers.selector);
         authority.addPartyCards(address(party), newPartyMembers, newPartyMemberVotingPowers, initialDelegates);
     }
 
@@ -164,7 +164,7 @@ contract JoinFamAuthorityTest is SetupPartyHelper {
         address[] memory initialDelegates = new address[](1);
         initialDelegates[0] = _randomAddress();
 
-        vm.expectRevert(JoinFamAuthority.InvalidPartyMemberVotingPower.selector);
+        vm.expectRevert(ManageFamAuthority.InvalidPartyMemberVotingPower.selector);
         authority.addPartyCards(address(party), newPartyMembers, newPartyMemberVotingPowers, initialDelegates);
     }
 
@@ -176,7 +176,7 @@ contract JoinFamAuthorityTest is SetupPartyHelper {
         address[] memory initialDelegates = new address[](1);
         initialDelegates[0] = _randomAddress();
 
-        vm.expectRevert(JoinFamAuthority.ArityMismatch.selector);
+        vm.expectRevert(ManageFamAuthority.ArityMismatch.selector);
         authority.addPartyCards(address(party), newPartyMembers, newPartyMemberVotingPowers, initialDelegates);
     }
 
@@ -197,7 +197,7 @@ contract JoinFamAuthorityTest is SetupPartyHelper {
             target: payable(address(authority)),
             value: 0,
             data: abi.encodeCall(
-                JoinFamAuthority.addPartyCards,
+                ManageFamAuthority.addPartyCards,
                 (address(party), newPartyMembers, newPartyMemberVotingPowers, initialDelegates)
             ),
             expectedResultHash: bytes32(0)
@@ -250,8 +250,7 @@ contract JoinFamAuthorityTest is SetupPartyHelper {
         // Mint the first Party Card
         authority.addPartyCards(address(party), newPartyMembers, newPartyMemberVotingPowers, initialDelegates);
 
-        // Try to add Party Cards to the existing members
-        vm.expectRevert(JoinFamAuthority.UserAlreadyHasPartyCard.selector);
+        vm.expectRevert(ManageFamAuthority.UserAlreadyHasPartyCard.selector);
         authority.addPartyCards(address(party), newPartyMembers, newPartyMemberVotingPowers, initialDelegates);
 
         // Verify that only the initially minted Party Card exists
@@ -286,7 +285,7 @@ contract JoinFamAuthorityTest is SetupPartyHelper {
         address unauthorizedUser = _randomAddress();
 
         vm.prank(unauthorizedUser);
-        vm.expectRevert(JoinFamAuthority.NotAuthorized.selector);
+        vm.expectRevert(ManageFamAuthority.NotAuthorized.selector);
         authority.setHypersub(partyAddress, hypersubAddress);
     }
 
@@ -317,8 +316,7 @@ contract JoinFamAuthorityTest is SetupPartyHelper {
         vm.prank(hosts[0]);
         authority.setHypersub(address(party), payable(address(hypersub)));
 
-        // Try to add party card without an active subscription
-        vm.expectRevert(JoinFamAuthority.NoActiveSubscription.selector);
+        vm.expectRevert(ManageFamAuthority.NoActiveSubscription.selector);
         vm.prank(address(party));
         authority.addPartyCards(address(party), newPartyMembers, newPartyMemberVotingPowers, initialDelegates);
 
@@ -346,8 +344,7 @@ contract JoinFamAuthorityTest is SetupPartyHelper {
         vm.prank(hosts[0]);
         authority.setHypersub(address(party), payable(address(0)));
 
-        // Try to add party cards without setting a Hypersub
-        vm.expectRevert(JoinFamAuthority.NoHypersubSet.selector);
+        vm.expectRevert(ManageFamAuthority.NoHypersubSet.selector);
         vm.prank(address(party));
         authority.addPartyCards(address(party), newPartyMembers, newPartyMemberVotingPowers, initialDelegates);
 
@@ -367,7 +364,7 @@ contract JoinFamAuthorityTest is SetupPartyHelper {
         uint256[] memory tokenIds;
 
         vm.prank(address(party));
-        vm.expectRevert(JoinFamAuthority.NoTokenIds.selector);
+        vm.expectRevert(ManageFamAuthority.NoTokenIds.selector);
         authority.removePartyCards(address(party), tokenIds);
     }
 
@@ -388,7 +385,7 @@ contract JoinFamAuthorityTest is SetupPartyHelper {
 
         // Attempt to remove party card while subscription is still active
         vm.prank(address(party));
-        vm.expectRevert(JoinFamAuthority.ActiveSubscription.selector);
+        vm.expectRevert(ManageFamAuthority.ActiveSubscription.selector);
         authority.removePartyCards(address(party), tokenIds);
     }
 
