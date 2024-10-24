@@ -84,18 +84,18 @@ $ forge snapshot
 $ anvil
 ```
 
-## Deploy - JoinFamAuthority
+## Deploy - ManageFamAuthority
 
-The JoinFamAuthority contract has been deployed to Base Sepolia testnet. Here are the latest deployment details:
+The ManageFamAuthority contract has been deployed to Base Sepolia testnet. Here are the latest deployment details:
 
-- **Contract Address**: `0xa8b5d9765b03fA560725cd208396fF0104907e7F`
-- **Transaction Hash**: `0xd6ce8aa6a024d79185c10a9389f6c3d8151ee50c67cbfc5cd701d315211c8f58`
+- **Contract Address**: `0x8eaC17a5A609976507734e979873d7c3B3eEbeb6`
+- **Transaction Hash**: `0xe0bcdf56445f98bbad5d7b8def2adbfbb2026c51f4060b9e3b75023c13b0061f`
 - **Deployer Address**: `0x35CE1fb8CAa3758190ac65EDbcBC9647b8800e8f`
 
 To deploy the contract yourself, use the following command:
 
 ```
-forge script script/DeployJoinFamAuthority.s.sol:DeployJoinFamAuthority --rpc-url YOUR_RPC_URL --private-key YOUR_PRIVATE_KEY --broadcast --verify --etherscan-api-key BLOCK_SCANNER_API_KEY -vvvv
+forge script script/DeployManageFamAuthority.s.sol:DeployManageFamAuthority --rpc-url YOUR_RPC_URL --private-key YOUR_PRIVATE_KEY --broadcast --verify --etherscan-api-key BLOCK_SCANNER_API_KEY -vvvv
 ```
 
 Make sure to replace `YOUR_RPC_URL`, `YOUR_PRIVATE_KEY`, and `BLOCK_SCANNER_API_KEY` with your actual values.
