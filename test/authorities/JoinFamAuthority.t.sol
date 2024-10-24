@@ -17,6 +17,7 @@ contract JoinFamAuthorityTest is SetupPartyHelper {
     address subscriberThree;
 
     event PartyCardAdded(address indexed party, address indexed partyMember, uint96 newIntrinsicVotingPower);
+    event PartyCardRemoved(address indexed party, uint256 indexed partyMember);
     event HypersubSet(address indexed party, address indexed hypersub);
 
     SubscriptionTokenV1 hypersub;
@@ -360,5 +361,66 @@ contract JoinFamAuthorityTest is SetupPartyHelper {
 
         // Verify that the party card was added
         assertEq(party.balanceOf(subscriber), 1);
+    }
+
+    function test_removePartyCards_requiresNonEmptyTokenIds() public {
+        uint256[] memory tokenIds;
+
+        vm.prank(address(party));
+        vm.expectRevert(JoinFamAuthority.NoTokenIds.selector);
+        authority.removePartyCards(address(party), tokenIds);
+    }
+
+    function test_removePartyCards_requiresExpiredSubscription() public {
+        // Setup: Add a party card for a subscriber
+        address[] memory newPartyMembers = new address[](1);
+        newPartyMembers[0] = subscriber;
+        uint96[] memory newPartyMemberVotingPowers = new uint96[](1);
+        newPartyMemberVotingPowers[0] = 100;
+        address[] memory initialDelegates = new address[](1);
+        initialDelegates[0] = subscriber;
+
+        vm.prank(address(party));
+        authority.addPartyCards(address(party), newPartyMembers, newPartyMemberVotingPowers, initialDelegates);
+
+        uint256[] memory tokenIds = new uint256[](1);
+        tokenIds[0] = party.tokenCount();
+
+        // Attempt to remove party card while subscription is still active
+        vm.prank(address(party));
+        vm.expectRevert(JoinFamAuthority.ActiveSubscription.selector);
+        authority.removePartyCards(address(party), tokenIds);
+    }
+
+    function test_removePartyCards_success() public {
+        // Setup: Add a party card for a subscriber
+        address[] memory newPartyMembers = new address[](1);
+        newPartyMembers[0] = subscriber;
+        uint96[] memory newPartyMemberVotingPowers = new uint96[](1);
+        newPartyMemberVotingPowers[0] = 100;
+        address[] memory initialDelegates = new address[](1);
+        initialDelegates[0] = subscriber;
+
+        vm.prank(address(party));
+        authority.addPartyCards(address(party), newPartyMembers, newPartyMemberVotingPowers, initialDelegates);
+        assertEq(party.balanceOf(subscriber), 1);
+
+        uint256[] memory tokenIds = new uint256[](1);
+        tokenIds[0] = party.tokenCount();
+
+        // Mock expired subscription
+        vm.mockCall(
+            address(hypersub), abi.encodeWithSelector(SubscriptionTokenV1.balanceOf.selector, subscriber), abi.encode(0)
+        );
+
+        // Expect PartyCardRemoved event
+        vm.expectEmit(true, true, true, true);
+        emit PartyCardRemoved(address(party), tokenIds[0]);
+
+        // Remove party card
+        authority.removePartyCards(address(party), tokenIds);
+
+        // Verify party card was removed
+        assertEq(party.balanceOf(subscriber), 0);
     }
 }
