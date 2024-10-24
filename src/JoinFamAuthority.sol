@@ -22,6 +22,10 @@ contract JoinFamAuthority {
     error NoHypersubSet();
     /// @notice Returned if a user doesn't have an active Hypersub subscription
     error NoActiveSubscription();
+    /// @notice Returned if no token IDs are provided for removal
+    error NoTokenIds();
+    /// @notice Returned if the user still has an active subscription
+    error ActiveSubscription();
 
     /// @notice Emitted when a party card is added via the `AddPartyCardsAuthority`
 
@@ -32,6 +36,10 @@ contract JoinFamAuthority {
     event PartyCardAdded(address indexed party, address indexed partyMember, uint96 newIntrinsicVotingPower);
     /// @notice Emitted when a Hypersub is set for a party
     event HypersubSet(address indexed party, address indexed hypersub);
+    /// @notice Emitted when a party card is removed from a party
+    /// @param party The address of the party from which the card was removed
+    /// @param tokenId The ID of the removed party card
+    event PartyCardRemoved(address indexed party, uint256 indexed tokenId);
 
     /// @notice Mapping of party addresses to their corresponding Hypersub addresses
     mapping(address => address payable) public partyToHypersub;
@@ -127,5 +135,31 @@ contract JoinFamAuthority {
             revert NotAuthorized();
         }
         _;
+    }
+
+    /// @notice Removes party cards from members with expired subscriptions
+    /// @param party The address of the party to remove cards from
+    /// @param tokenIds The IDs of the party cards to remove
+    function removePartyCards(address party, uint256[] calldata tokenIds) external {
+        if (tokenIds.length == 0) {
+            revert NoTokenIds();
+        }
+
+        address payable hypersubAddress = partyToHypersub[party];
+        if (hypersubAddress == address(0)) {
+            revert NoHypersubSet();
+        }
+
+        for (uint256 i = 0; i < tokenIds.length; i++) {
+            uint256 tokenId = tokenIds[i];
+            address owner = PartyGovernanceNFT(party).ownerOf(tokenId);
+
+            if (SubscriptionTokenV1(hypersubAddress).balanceOf(owner) > 0) {
+                revert ActiveSubscription();
+            }
+
+            PartyGovernanceNFT(party).burn(tokenId);
+            emit PartyCardRemoved(party, tokenId);
+        }
     }
 }

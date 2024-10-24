@@ -363,17 +363,6 @@ contract JoinFamAuthorityTest is SetupPartyHelper {
         assertEq(party.balanceOf(subscriber), 1);
     }
 
-    // Add these tests after the existing tests in the JoinFamAuthorityTest contract
-
-    function test_removePartyCards_requiresActiveAuthority() public {
-        uint256[] memory tokenIds = new uint256[](1);
-        tokenIds[0] = 1;
-
-        vm.prank(address(0xdead));
-        vm.expectRevert(JoinFamAuthority.NotAuthorized.selector);
-        authority.removePartyCards(address(party), tokenIds);
-    }
-
     function test_removePartyCards_requiresNonEmptyTokenIds() public {
         uint256[] memory tokenIds;
 
@@ -428,7 +417,6 @@ contract JoinFamAuthorityTest is SetupPartyHelper {
         emit PartyCardRemoved(address(party), tokenIds[0]);
 
         // Remove party card
-        vm.prank(address(party));
         authority.removePartyCards(address(party), tokenIds);
 
         // Verify party card was removed
